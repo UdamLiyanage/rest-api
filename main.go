@@ -4,7 +4,28 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.mongodb.org/mongo-driver/mongo"
+	"os"
 )
+
+var (
+	enterpriseCollection   *mongo.Collection
+	userCollection         *mongo.Collection
+	deviceCollection       *mongo.Collection
+	actionCollection       *mongo.Collection
+	deviceSchemaCollection *mongo.Collection
+	ruleCollection         *mongo.Collection
+)
+
+func init() {
+	databaseClient := connect()
+	enterpriseCollection = databaseCollection(databaseClient, os.Getenv("ENTERPRISES_DB"), os.Getenv("ENTERPRISES_COLLECTION"))
+	userCollection = databaseCollection(databaseClient, os.Getenv("USERS_DB"), os.Getenv("USERS_COLLECTION"))
+	deviceSchemaCollection = databaseCollection(databaseClient, os.Getenv("DEVICE_SCHEMAS_DB"), os.Getenv("DEVICE_SCHEMAS_COLLECTION"))
+	deviceCollection = databaseCollection(databaseClient, os.Getenv("DEVICES_DB"), os.Getenv("DEVICES_COLLECTION"))
+	actionCollection = databaseCollection(databaseClient, os.Getenv("ACTIONS_DB"), os.Getenv("ACTIONS_COLLECTION"))
+	ruleCollection = databaseCollection(databaseClient, os.Getenv("RULES_DB"), os.Getenv("RULES_COLLECTION"))
+}
 
 func setupRouter() *echo.Echo {
 	e := echo.New()
