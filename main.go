@@ -20,18 +20,23 @@ func setupRouter() *echo.Echo {
 	e.GET("/users/:id", getUser)
 	e.GET("/devices", getDevices)
 	e.GET("/devices/:id", getDevice)
+	e.GET("/device-schemas", getDeviceSchemas)
+	e.GET("/device-schemas/:id", getDeviceSchema)
 
 	e.POST("/enterprises", createEnterprise)
 	e.POST("/users", createUser)
 	e.POST("/devices", createDevice)
+	e.POST("/device-schemas", createDeviceSchema)
 
 	e.PUT("/enterprises/:id", updateEnterprise)
 	e.PUT("/users/:id", updateUser)
 	e.PUT("/devices/:id", updateDevice)
+	e.PUT("/device-schemas/:id", updateDeviceSchema)
 
 	e.DELETE("/enterprises/:id", deleteEnterprise)
 	e.DELETE("/users/:id", deleteUser)
 	e.DELETE("/devices/:id", deleteDevice)
+	e.DELETE("/device-schemas/:id", deleteDeviceSchema)
 
 	return e
 }
