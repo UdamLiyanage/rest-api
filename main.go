@@ -16,12 +16,17 @@ func setupRouter() *echo.Echo {
 
 	e.GET("/enterprises", getEnterprises)
 	e.GET("/enterprises/:id", getEnterprise)
+	e.GET("/users", getUsers)
+	e.GET("/users/:id", getUser)
 
 	e.POST("/enterprises", createEnterprise)
+	e.POST("/users", createUser)
 
 	e.PUT("/enterprises/:id", updateEnterprise)
+	e.PUT("/users/:id", updateUser)
 
 	e.DELETE("/enterprises/:id", deleteEnterprise)
+	e.DELETE("/users/:id", deleteUser)
 
 	return e
 }
