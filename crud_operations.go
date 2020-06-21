@@ -7,7 +7,7 @@ import (
 
 type (
 	Operations interface {
-		Create(model interface{}) interface{}
+		Create(model interface{}) (interface{}, error)
 		Read() interface{}
 		Index() interface{}
 		Update() interface{}
@@ -19,12 +19,12 @@ type (
 	}
 )
 
-func (config Configuration) Create(model interface{}) interface{} {
+func (config Configuration) Create(model interface{}) (interface{}, error) {
 	doc, err := config.Collection.InsertOne(context.Background(), model)
 	if err != nil {
-		return err
+		return nil, err
 	} else {
-		return doc
+		return doc, nil
 	}
 }
 
