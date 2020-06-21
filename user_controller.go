@@ -1,6 +1,9 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"io/ioutil"
+)
 
 func getUsers(c echo.Context) error {
 	var crud Operations = Configuration{
@@ -22,8 +25,19 @@ func createUser(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: userCollection,
 	}
-	user := crud.Create()
-	return c.JSON(201, user)
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		panic(err)
+	}
+	user, err := UnmarshalUser(body)
+	if err != nil {
+		panic(err)
+	}
+	response, err := crud.Create(user)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(201, response)
 }
 
 func updateUser(c echo.Context) error {
