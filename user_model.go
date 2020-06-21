@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 func UnmarshalUser(data []byte) (User, error) {
 	var r User
@@ -19,8 +22,8 @@ type User struct {
 	Email       string      `json:"email"`
 	Address     UserAddress `json:"address"`
 	PhoneNumber string      `json:"phoneNumber"`
-	CreatedAt   string      `json:"created_at"`
-	UpdatedAt   string      `json:"updated_at"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 type UserAddress struct {
