@@ -22,11 +22,7 @@ type (
 
 func (config Configuration) Create(model interface{}) (interface{}, error) {
 	doc, err := config.Collection.InsertOne(context.Background(), model)
-	if err != nil {
-		return nil, err
-	} else {
-		return doc, nil
-	}
+	return doc, err
 }
 
 func (config Configuration) Read() interface{} {
