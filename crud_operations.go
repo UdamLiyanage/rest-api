@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -37,7 +38,13 @@ func (config Configuration) Index() interface{} {
 }
 
 func (config Configuration) Update() interface{} {
-	return nil
+	filter := bson.M{"urn": "test"}
+	doc, err := config.Collection.UpdateOne(context.Background(), filter, "test")
+	if err != nil {
+		panic(err)
+	} else {
+		return doc
+	}
 }
 
 func (config Configuration) Delete() bool {
