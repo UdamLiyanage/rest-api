@@ -1,6 +1,9 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"io/ioutil"
+)
 
 func getDevices(c echo.Context) error {
 	var crud Operations = Configuration{
@@ -22,8 +25,19 @@ func createDevice(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceCollection,
 	}
-	device := crud.Create()
-	return c.JSON(201, device)
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		panic(err)
+	}
+	device, err := UnmarshalDevice(body)
+	if err != nil {
+		panic(err)
+	}
+	response, err := crud.Create(device)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(201, response)
 }
 
 func updateDevice(c echo.Context) error {
