@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"io/ioutil"
 )
@@ -41,11 +42,18 @@ func createRule(c echo.Context) error {
 }
 
 func updateRule(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: ruleCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: ruleCollection,
+		}
+		rule Rule
+	)
+	err := json.NewDecoder(c.Request().Body).Decode(&rule)
+	if err != nil {
+		panic(err)
 	}
-	rule := crud.Update()
-	return c.JSON(200, rule)
+	response := crud.Update()
+	return c.JSON(200, response)
 }
 
 func deleteRule(c echo.Context) error {
