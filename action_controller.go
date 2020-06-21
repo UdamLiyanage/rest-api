@@ -52,7 +52,10 @@ func updateAction(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	response := crud.Update()
+	response, err := crud.Update()
+	if err != nil {
+		panic(err)
+	}
 	return c.JSON(200, response)
 }
 

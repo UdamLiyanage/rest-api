@@ -11,7 +11,7 @@ type (
 		Create(model interface{}) (interface{}, error)
 		Read() interface{}
 		Index() interface{}
-		Update() interface{}
+		Update() (interface{}, error)
 		Delete() bool
 	}
 
@@ -37,14 +37,10 @@ func (config Configuration) Index() interface{} {
 	return nil
 }
 
-func (config Configuration) Update() interface{} {
+func (config Configuration) Update() (interface{}, error) {
 	filter := bson.M{"urn": "test"}
 	doc, err := config.Collection.UpdateOne(context.Background(), filter, "test")
-	if err != nil {
-		panic(err)
-	} else {
-		return doc
-	}
+	return doc, err
 }
 
 func (config Configuration) Delete() bool {
