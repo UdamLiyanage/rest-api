@@ -13,11 +13,26 @@ func (r *User) MarshalUser() ([]byte, error) {
 }
 
 type User struct {
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	AccountType string `json:"accountType"`
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phoneNumber"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	FirstName   string      `json:"firstName"`
+	LastName    string      `json:"lastName"`
+	AccountType string      `json:"accountType"`
+	Email       string      `json:"email"`
+	Address     UserAddress `json:"address"`
+	PhoneNumber string      `json:"phoneNumber"`
+	CreatedAt   string      `json:"created_at"`
+	UpdatedAt   string      `json:"updated_at"`
+}
+
+type UserAddress struct {
+	Primary   Billing `json:"primary"`
+	Secondary Billing `json:"secondary"`
+	Billing   Billing `json:"billing"`
+}
+
+type Billing struct {
+	Line1    string `json:"line_1"`
+	Line2    string `json:"line_2"`
+	City     string `json:"city"`
+	Postcode string `json:"postcode"`
+	Country  string `json:"country"`
 }
