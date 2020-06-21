@@ -3,12 +3,12 @@ package main
 import "go.mongodb.org/mongo-driver/mongo"
 
 type (
-	Operation interface {
-		create() interface{}
-		read() interface{}
-		index() interface{}
-		update() interface{}
-		delete() bool
+	Operations interface {
+		Create() interface{}
+		Read() interface{}
+		Index() interface{}
+		Update() interface{}
+		Delete() bool
 	}
 
 	Configuration struct {
@@ -16,22 +16,22 @@ type (
 	}
 )
 
-func (config Configuration) create() interface{} {
+func (config Configuration) Create() interface{} {
 	return nil
 }
 
-func (config Configuration) read() interface{} {
+func (config Configuration) Read() interface{} {
 	return nil
 }
 
-func (config Configuration) index() interface{} {
+func (config Configuration) Index() interface{} {
 	return nil
 }
 
-func (config Configuration) update() interface{} {
+func (config Configuration) Update() interface{} {
 	return nil
 }
 
-func (config Configuration) delete() bool {
+func (config Configuration) Delete() bool {
 	return false
 }
