@@ -18,8 +18,11 @@ func getEnterprise(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: enterpriseCollection,
 	}
-	enterprise := crud.Index()
-	return c.JSON(200, enterprise)
+	response, err := crud.Index(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func createEnterprise(c echo.Context) error {

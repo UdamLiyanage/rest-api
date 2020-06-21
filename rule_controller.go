@@ -18,8 +18,11 @@ func getRule(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rule := crud.Index()
-	return c.JSON(200, rule)
+	response, err := crud.Index(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func createRule(c echo.Context) error {

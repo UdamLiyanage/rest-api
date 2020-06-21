@@ -18,8 +18,11 @@ func getUser(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: userCollection,
 	}
-	user := crud.Index()
-	return c.JSON(200, user)
+	response, err := crud.Index(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func createUser(c echo.Context) error {

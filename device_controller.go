@@ -18,8 +18,11 @@ func getDevice(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceCollection,
 	}
-	device := crud.Index()
-	return c.JSON(200, device)
+	response, err := crud.Index(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func createDevice(c echo.Context) error {

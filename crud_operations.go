@@ -10,7 +10,7 @@ type (
 	Operations interface {
 		Create(model interface{}) (interface{}, error)
 		Read() interface{}
-		Index() interface{}
+		Index(urn string) (interface{}, error)
 		Update(urn string) (interface{}, error)
 		Delete() bool
 	}
@@ -29,11 +29,11 @@ func (config Configuration) Read() interface{} {
 	return nil
 }
 
-func (config Configuration) Index() interface{} {
+func (config Configuration) Index(urn string) (interface{}, error) {
 	var doc interface{}
-	filter := bson.M{"urn": "urn"}
+	filter := bson.M{"urn": urn}
 	err := config.Collection.FindOne(context.Background(), filter).Decode(&doc)
-	return err
+	return doc, err
 }
 
 func (config Configuration) Update(urn string) (interface{}, error) {
