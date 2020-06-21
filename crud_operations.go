@@ -13,7 +13,7 @@ type (
 		Read() interface{}
 		Index(urn string) (interface{}, error)
 		Update(urn string) (interface{}, error)
-		Delete() bool
+		Delete(urn string) (bool, error)
 	}
 
 	Configuration struct {
@@ -43,12 +43,12 @@ func (config Configuration) Update(urn string) (interface{}, error) {
 	return doc, err
 }
 
-func (config Configuration) Delete() bool {
-	filter := bson.M{"urn": "urn"}
+func (config Configuration) Delete(urn string) (bool, error) {
+	filter := bson.M{"urn": urn}
 	delRes, err := config.Collection.DeleteOne(context.Background(), filter)
 	if err != nil || delRes.DeletedCount == 0 {
 		err = errors.New("delete error: delete count less than 1")
-		return false
+		return false, err
 	}
-	return false
+	return true, nil
 }

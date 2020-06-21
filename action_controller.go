@@ -66,8 +66,8 @@ func deleteAction(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: actionCollection,
 	}
-	status := crud.Delete()
-	if status {
+	status, err := crud.Delete(c.Param("urn"))
+	if err != nil || !status {
 		return c.JSON(401, nil)
 	}
 	return c.JSON(500, nil)
