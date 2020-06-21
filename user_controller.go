@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"io/ioutil"
 )
@@ -41,11 +42,18 @@ func createUser(c echo.Context) error {
 }
 
 func updateUser(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: userCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: userCollection,
+		}
+		user User
+	)
+	err := json.NewDecoder(c.Request().Body).Decode(&user)
+	if err != nil {
+		panic(err)
 	}
-	user := crud.Update()
-	return c.JSON(200, user)
+	response := crud.Update()
+	return c.JSON(200, response)
 }
 
 func deleteUser(c echo.Context) error {
