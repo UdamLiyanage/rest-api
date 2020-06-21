@@ -1,6 +1,9 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"io/ioutil"
+)
 
 func getDeviceSchemas(c echo.Context) error {
 	var crud Operations = Configuration{
@@ -22,8 +25,19 @@ func createDeviceSchema(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceSchemaCollection,
 	}
-	schema := crud.Create()
-	return c.JSON(201, schema)
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		panic(err)
+	}
+	schema, err := UnmarshalDeviceSchema(body)
+	if err != nil {
+		panic(err)
+	}
+	response, err := crud.Create(schema)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(201, response)
 }
 
 func updateDeviceSchema(c echo.Context) error {
