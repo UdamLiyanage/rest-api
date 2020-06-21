@@ -1,10 +1,13 @@
 package main
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 type (
 	Operations interface {
-		Create() interface{}
+		Create(model interface{}) interface{}
 		Read() interface{}
 		Index() interface{}
 		Update() interface{}
@@ -16,8 +19,13 @@ type (
 	}
 )
 
-func (config Configuration) Create() interface{} {
-	return nil
+func (config Configuration) Create(model interface{}) interface{} {
+	doc, err := config.Collection.InsertOne(context.Background(), model)
+	if err != nil {
+		return err
+	} else {
+		return doc
+	}
 }
 
 func (config Configuration) Read() interface{} {
