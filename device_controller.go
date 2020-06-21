@@ -52,7 +52,7 @@ func updateDevice(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	response, err := crud.Update()
+	response, err := crud.Update(c.Param("id"))
 	if err != nil {
 		panic(err)
 	}
