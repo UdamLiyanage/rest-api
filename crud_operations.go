@@ -30,7 +30,10 @@ func (config Configuration) Read() interface{} {
 }
 
 func (config Configuration) Index() interface{} {
-	return nil
+	var doc interface{}
+	filter := bson.M{"urn": "urn"}
+	err := config.Collection.FindOne(context.Background(), filter).Decode(&doc)
+	return err
 }
 
 func (config Configuration) Update(urn string) (interface{}, error) {
