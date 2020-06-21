@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -43,5 +44,11 @@ func (config Configuration) Update(urn string) (interface{}, error) {
 }
 
 func (config Configuration) Delete() bool {
+	filter := bson.M{"urn": "urn"}
+	delRes, err := config.Collection.DeleteOne(context.Background(), filter)
+	if err != nil || delRes.DeletedCount == 0 {
+		err = errors.New("delete error: delete count less than 1")
+		return false
+	}
 	return false
 }
