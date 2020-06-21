@@ -18,14 +18,21 @@ func getActions(c echo.Context) error {
 }
 
 func getAction(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: actionCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: actionCollection,
+		}
+		action Action
+	)
+	result := crud.Index(c.Param("id"))
+	if result.Err() != nil {
+		panic(result.Err())
 	}
-	response, err := crud.Index(c.Param("id"))
+	err := result.Decode(&action)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	return c.JSON(200, action)
 }
 
 func createAction(c echo.Context) error {

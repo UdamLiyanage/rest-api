@@ -18,14 +18,21 @@ func getDeviceSchemas(c echo.Context) error {
 }
 
 func getDeviceSchema(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: deviceSchemaCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: deviceSchemaCollection,
+		}
+		schema DeviceSchema
+	)
+	result := crud.Index(c.Param("id"))
+	if result.Err() != nil {
+		panic(result.Err())
 	}
-	response, err := crud.Index(c.Param("id"))
+	err := result.Decode(&schema)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	return c.JSON(200, schema)
 }
 
 func createDeviceSchema(c echo.Context) error {

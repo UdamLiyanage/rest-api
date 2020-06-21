@@ -18,14 +18,21 @@ func getEnterprises(c echo.Context) error {
 }
 
 func getEnterprise(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: enterpriseCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: enterpriseCollection,
+		}
+		ent Enterprise
+	)
+	result := crud.Index(c.Param("id"))
+	if result.Err() != nil {
+		panic(result.Err())
 	}
-	response, err := crud.Index(c.Param("id"))
+	err := result.Decode(&ent)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	return c.JSON(200, ent)
 }
 
 func createEnterprise(c echo.Context) error {

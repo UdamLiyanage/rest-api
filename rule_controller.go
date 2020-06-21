@@ -18,14 +18,21 @@ func getRules(c echo.Context) error {
 }
 
 func getRule(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: ruleCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: ruleCollection,
+		}
+		rule Rule
+	)
+	result := crud.Index(c.Param("id"))
+	if result.Err() != nil {
+		panic(result.Err())
 	}
-	response, err := crud.Index(c.Param("id"))
+	err := result.Decode(&rule)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	return c.JSON(200, rule)
 }
 
 func createRule(c echo.Context) error {
