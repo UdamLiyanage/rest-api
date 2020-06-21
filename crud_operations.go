@@ -27,7 +27,8 @@ func (config Configuration) Create(model interface{}) (interface{}, error) {
 }
 
 func (config Configuration) Read() interface{} {
-	return nil
+	docs, _ := config.Collection.Find(context.Background(), nil)
+	return docs
 }
 
 func (config Configuration) Index(urn string) (interface{}, error) {
