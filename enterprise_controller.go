@@ -1,6 +1,9 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"io/ioutil"
+)
 
 func getEnterprises(c echo.Context) error {
 	var crud Operations = Configuration{
@@ -22,8 +25,19 @@ func createEnterprise(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: enterpriseCollection,
 	}
-	enterprise := crud.Create()
-	return c.JSON(201, enterprise)
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		panic(err)
+	}
+	enterprise, err := UnmarshalEnterprise(body)
+	if err != nil {
+		panic(err)
+	}
+	response, err := crud.Create(enterprise)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(201, response)
 }
 
 func updateEnterprise(c echo.Context) error {
