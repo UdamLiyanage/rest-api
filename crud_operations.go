@@ -6,6 +6,7 @@ type (
 	Operation interface {
 		create() interface{}
 		read() interface{}
+		index() interface{}
 		update() interface{}
 		delete() bool
 	}
@@ -20,6 +21,10 @@ func (config Configuration) create() interface{} {
 }
 
 func (config Configuration) read() interface{} {
+	return nil
+}
+
+func (config Configuration) index() interface{} {
 	return nil
 }
 
