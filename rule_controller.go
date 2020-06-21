@@ -3,42 +3,42 @@ package main
 import "github.com/labstack/echo/v4"
 
 func getRules(c echo.Context) error {
-	var config = Configuration{
+	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rules := config.read()
+	rules := crud.Read()
 	return c.JSON(200, rules)
 }
 
 func getRule(c echo.Context) error {
-	var config = Configuration{
+	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rule := config.read()
+	rule := crud.Index()
 	return c.JSON(200, rule)
 }
 
 func createRule(c echo.Context) error {
-	var config = Configuration{
+	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rule := config.create()
+	rule := crud.Create()
 	return c.JSON(201, rule)
 }
 
 func updateRule(c echo.Context) error {
-	var config = Configuration{
+	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rule := config.read()
+	rule := crud.Update()
 	return c.JSON(200, rule)
 }
 
 func deleteRule(c echo.Context) error {
-	var config = Configuration{
+	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	status := config.delete()
+	status := crud.Delete()
 	if status {
 		return c.JSON(401, nil)
 	}
