@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"io/ioutil"
 )
@@ -41,11 +42,18 @@ func createDeviceSchema(c echo.Context) error {
 }
 
 func updateDeviceSchema(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: deviceSchemaCollection,
+	var (
+		crud Operations = Configuration{
+			Collection: deviceSchemaCollection,
+		}
+		schema DeviceSchema
+	)
+	err := json.NewDecoder(c.Request().Body).Decode(&schema)
+	if err != nil {
+		panic(err)
 	}
-	schema := crud.Update()
-	return c.JSON(200, schema)
+	response := crud.Update()
+	return c.JSON(200, response)
 }
 
 func deleteDeviceSchema(c echo.Context) error {
