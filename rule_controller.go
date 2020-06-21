@@ -10,8 +10,11 @@ func getRules(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rules := crud.Read()
-	return c.JSON(200, rules)
+	response, err := crud.Read(nil)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func getRule(c echo.Context) error {

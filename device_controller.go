@@ -10,8 +10,11 @@ func getDevices(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceCollection,
 	}
-	devices := crud.Read()
-	return c.JSON(200, devices)
+	response, err := crud.Read(nil)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func getDevice(c echo.Context) error {

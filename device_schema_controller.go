@@ -10,8 +10,11 @@ func getDeviceSchemas(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceSchemaCollection,
 	}
-	schemas := crud.Read()
-	return c.JSON(200, schemas)
+	response, err := crud.Read(nil)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func getDeviceSchema(c echo.Context) error {

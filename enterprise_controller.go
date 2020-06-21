@@ -10,8 +10,11 @@ func getEnterprises(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: enterpriseCollection,
 	}
-	enterprises := crud.Read()
-	return c.JSON(200, enterprises)
+	response, err := crud.Read(nil)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func getEnterprise(c echo.Context) error {

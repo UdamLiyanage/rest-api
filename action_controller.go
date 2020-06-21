@@ -10,8 +10,11 @@ func getActions(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: actionCollection,
 	}
-	actions := crud.Read()
-	return c.JSON(200, actions)
+	response, err := crud.Read(nil)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func getAction(c echo.Context) error {

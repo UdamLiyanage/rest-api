@@ -10,7 +10,7 @@ import (
 type (
 	Operations interface {
 		Create(model interface{}) (interface{}, error)
-		Read() interface{}
+		Read(filter bson.M) (interface{}, error)
 		Index(urn string) (interface{}, error)
 		Update(urn string) (interface{}, error)
 		Delete(urn string) (bool, error)
@@ -26,9 +26,9 @@ func (config Configuration) Create(model interface{}) (interface{}, error) {
 	return doc, err
 }
 
-func (config Configuration) Read() interface{} {
-	docs, _ := config.Collection.Find(context.Background(), nil)
-	return docs
+func (config Configuration) Read(filter bson.M) (interface{}, error) {
+	docs, err := config.Collection.Find(context.Background(), filter)
+	return docs, err
 }
 
 func (config Configuration) Index(urn string) (interface{}, error) {

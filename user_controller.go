@@ -10,8 +10,11 @@ func getUsers(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: userCollection,
 	}
-	users := crud.Read()
-	return c.JSON(200, users)
+	response, err := crud.Read(nil)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(200, response)
 }
 
 func getUser(c echo.Context) error {
