@@ -1,6 +1,9 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"io/ioutil"
+)
 
 func getRules(c echo.Context) error {
 	var crud Operations = Configuration{
@@ -22,8 +25,19 @@ func createRule(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: ruleCollection,
 	}
-	rule := crud.Create()
-	return c.JSON(201, rule)
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		panic(err)
+	}
+	rule, err := UnmarshalRule(body)
+	if err != nil {
+		panic(err)
+	}
+	response, err := crud.Create(rule)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(201, response)
 }
 
 func updateRule(c echo.Context) error {
