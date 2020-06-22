@@ -12,7 +12,7 @@ type (
 		Create(model interface{}) (interface{}, error)
 		Read(filter bson.M) (interface{}, error)
 		Index(urn string) *mongo.SingleResult
-		Update(urn string, update interface{}) (interface{}, error)
+		Update(urn string, update interface{}) (*mongo.UpdateResult, error)
 		Delete(urn string) (bool, error)
 	}
 
@@ -37,7 +37,7 @@ func (config Configuration) Index(urn string) *mongo.SingleResult {
 	return res
 }
 
-func (config Configuration) Update(urn string, update interface{}) (interface{}, error) {
+func (config Configuration) Update(urn string, update interface{}) (*mongo.UpdateResult, error) {
 	filter := bson.M{"urn": urn}
 	doc, err := config.Collection.UpdateOne(context.Background(), filter, update)
 	return doc, err
