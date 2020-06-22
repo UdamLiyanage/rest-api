@@ -88,7 +88,7 @@ func deleteAction(c echo.Context) error {
 	}
 	status, err := crud.Delete(c.Param("urn"))
 	if err != nil || !status {
-		return c.JSON(401, nil)
+		return c.JSON(500, nil)
 	}
-	return c.JSON(500, nil)
+	return c.JSON(204, nil)
 }
