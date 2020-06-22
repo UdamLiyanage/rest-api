@@ -72,7 +72,14 @@ func updateUser(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	if response.MatchedCount == 0 {
+		return c.JSON(404, "document with urn not found")
+	} else {
+		if response.ModifiedCount == 0 {
+			return c.JSON(304, "document not modified")
+		}
+	}
+	return c.JSON(200, user)
 }
 
 func deleteUser(c echo.Context) error {
