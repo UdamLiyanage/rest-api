@@ -55,6 +55,7 @@ func setupRouter() *echo.Echo {
 	e.POST("/device-schemas", createDeviceSchema)
 	e.POST("/actions", createAction)
 	e.POST("/rules", createRule)
+	e.POST("/devices/:id/attach/user", attachDeviceOwner)
 
 	e.PUT("/enterprises/:id", updateEnterprise)
 	e.PUT("/users/:id", updateUser)
