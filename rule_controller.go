@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"io/ioutil"
+	"time"
 )
 
 func getRules(c echo.Context) error {
@@ -48,6 +49,8 @@ func createRule(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	rule.CreatedAt = time.Now()
+	rule.UpdatedAt = time.Now()
 	response, err := crud.Create(rule)
 	if err != nil {
 		panic(err)
@@ -66,6 +69,7 @@ func updateRule(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	rule.UpdatedAt = time.Now()
 	response, err := crud.Update(c.Param("id"), bson.M{
 		"$set": rule,
 	})

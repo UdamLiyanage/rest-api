@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"io/ioutil"
+	"time"
 )
 
 func getDeviceSchemas(c echo.Context) error {
@@ -48,6 +49,8 @@ func createDeviceSchema(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	schema.CreatedAt = time.Now()
+	schema.UpdatedAt = time.Now()
 	response, err := crud.Create(schema)
 	if err != nil {
 		panic(err)
@@ -66,6 +69,7 @@ func updateDeviceSchema(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	schema.UpdatedAt = time.Now()
 	response, err := crud.Update(c.Param("id"), bson.M{
 		"$set": schema,
 	})

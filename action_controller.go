@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"io/ioutil"
+	"time"
 )
 
 func getActions(c echo.Context) error {
@@ -48,6 +49,8 @@ func createAction(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	action.CreatedAt = time.Now()
+	action.UpdatedAt = time.Now()
 	response, err := crud.Create(action)
 	if err != nil {
 		panic(err)
@@ -66,6 +69,7 @@ func updateAction(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	action.UpdatedAt = time.Now()
 	response, err := crud.Update(c.Param("id"), bson.M{
 		"$set": action,
 	})
