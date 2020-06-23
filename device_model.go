@@ -19,6 +19,7 @@ type Device struct {
 	ID                 string    `json:"_id"`
 	Serial             string    `json:"serial"`
 	Urn                string    `json:"urn"`
+	Schema             string    `json:"schema"`
 	Name               string    `json:"name"`
 	FirmwareVersion    string    `json:"firmware_version"`
 	LastFirmwareUpdate string    `json:"last_firmware_update"`
