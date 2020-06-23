@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io/ioutil"
 	"time"
 )
@@ -28,6 +29,9 @@ func getRule(c echo.Context) error {
 	)
 	result := crud.Index(c.Param("id"))
 	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return c.JSON(404, nil)
+		}
 		panic(result.Err())
 	}
 	err := result.Decode(&rule)
