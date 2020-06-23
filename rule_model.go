@@ -13,10 +13,9 @@ func (r *Rule) MarshalRule() ([]byte, error) {
 }
 
 type Rule struct {
-	Device     string    `json:"device"`
-	ActionID   string    `json:"action_id"`
-	ActionType string    `json:"action_type"`
-	Rule       RuleClass `json:"rule"`
+	Device  string    `json:"device"`
+	Actions []string  `json:"actions"`
+	Rule    RuleClass `json:"rule"`
 }
 
 type RuleClass struct {
