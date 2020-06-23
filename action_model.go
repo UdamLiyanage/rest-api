@@ -13,6 +13,7 @@ func (r *Action) MarshalAction() ([]byte, error) {
 }
 
 type Action struct {
+	Schema        string      `json:"schema"`
 	Type          string      `json:"type"`
 	Configuration interface{} `json:"configuration"`
 }
