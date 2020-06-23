@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 func UnmarshalRule(data []byte) (Rule, error) {
 	var r Rule
@@ -13,9 +16,11 @@ func (r *Rule) MarshalRule() ([]byte, error) {
 }
 
 type Rule struct {
-	Device  string    `json:"device"`
-	Actions []string  `json:"actions"`
-	Rule    RuleClass `json:"rule"`
+	Device    string    `json:"device"`
+	Actions   []string  `json:"actions"`
+	Rule      RuleClass `json:"rule"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type RuleClass struct {
