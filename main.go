@@ -35,6 +35,14 @@ func setupRouter() *echo.Echo {
 	}))
 
 	e.Use(middleware.Recover())
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if c.Param("id") == "test" {
+				return echo.NewHTTPError(401, "Unauthorized")
+			}
+			return next(c)
+		}
+	})
 
 	e.GET("/enterprises", getEnterprises)
 	e.GET("/enterprises/:id", getEnterprise)
