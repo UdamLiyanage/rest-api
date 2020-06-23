@@ -13,6 +13,7 @@ func (r *Rule) MarshalRule() ([]byte, error) {
 }
 
 type Rule struct {
+	Device     string    `json:"device"`
 	ActionID   string    `json:"action_id"`
 	ActionType string    `json:"action_type"`
 	Rule       RuleClass `json:"rule"`
