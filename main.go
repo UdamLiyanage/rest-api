@@ -100,7 +100,6 @@ func setupRouter() *echo.Echo {
 						panic(err.Error())
 					}
 
-					/*claims := jwt.MapClaims{}
 					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 						res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 						return res, nil
@@ -108,12 +107,8 @@ func setupRouter() *echo.Echo {
 					if err != nil {
 						panic(err)
 					}
-					if claims, _ = t.Claims.(jwt.MapClaims); t.Valid {
-						for k, v := range claims {
-							println("K:" + k)
-							println("V" + v.(string))
-						}
-					}*/
+					x := t.Claims.(jwt.MapClaims)
+					println(x["https://abydub.com/email"].(string))
 
 					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 					return result, nil
