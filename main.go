@@ -1,10 +1,15 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
+	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/dgrijalva/jwt-go"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
+	"net/http"
 	"os"
 )
 
@@ -17,6 +22,21 @@ var (
 	ruleCollection         *mongo.Collection
 )
 
+type (
+	Jwks struct {
+		Keys []JSONWebKeys `json:"keys"`
+	}
+
+	JSONWebKeys struct {
+		Kty string   `json:"kty"`
+		Kid string   `json:"kid"`
+		Use string   `json:"use"`
+		N   string   `json:"n"`
+		E   string   `json:"e"`
+		X5c []string `json:"x5c"`
+	}
+)
+
 func init() {
 	databaseClient := connect()
 	enterpriseCollection = databaseCollection(databaseClient, os.Getenv("ENTERPRISES_DB"), os.Getenv("ENTERPRISES_COLLECTION"))
@@ -27,8 +47,86 @@ func init() {
 	ruleCollection = databaseCollection(databaseClient, os.Getenv("RULES_DB"), os.Getenv("RULES_COLLECTION"))
 }
 
+func getPemCert(token *jwt.Token) (string, error) {
+	cert := ""
+	resp, err := http.Get("https://dev-althinect-smart-socket.us.auth0.com/.well-known/jwks.json")
+
+	if err != nil {
+		return cert, err
+	}
+	defer resp.Body.Close()
+
+	var jwks = Jwks{}
+	err = json.NewDecoder(resp.Body).Decode(&jwks)
+
+	if err != nil {
+		return cert, err
+	}
+
+	for k := range jwks.Keys {
+		if token.Header["kid"] == jwks.Keys[k].Kid {
+			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
+		}
+	}
+
+	if cert == "" {
+		err := errors.New("unable to find appropriate key")
+		return cert, err
+	}
+
+	return cert, nil
+}
+
 func setupRouter() *echo.Echo {
 	e := echo.New()
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			//jwtMiddleware.HandlerWithNext(c.Response().Writer, c.Request(), nil)
+			jM := jwtmiddleware.New(jwtmiddleware.Options{
+				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+					aud := "https://api.abydub.com"
+					checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
+					if !checkAud {
+						return token, errors.New("invalid audience")
+					}
+					iss := "https://dev-althinect-smart-socket.us.auth0.com/"
+					checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
+					if !checkIss {
+						return token, errors.New("invalid issuer")
+					}
+
+					cert, err := getPemCert(token)
+					if err != nil {
+						panic(err.Error())
+					}
+
+					/*claims := jwt.MapClaims{}
+					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+						res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+						return res, nil
+					})
+					if err != nil {
+						panic(err)
+					}
+					if claims, _ = t.Claims.(jwt.MapClaims); t.Valid {
+						for k, v := range claims {
+							println("K:" + k)
+							println("V" + v.(string))
+						}
+					}*/
+
+					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+					return result, nil
+				},
+				SigningMethod: jwt.SigningMethodRS256,
+			})
+			err := jM.CheckJWT(c.Response().Writer, c.Request())
+			if err != nil {
+				panic(err)
+			}
+			return next(c)
+		}
+	})
 	e.Use(middleware.RequestID())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time_rfc3339} method=${method}, uri=${uri}, status=${status} path=${path} latency=${latency_human}\n",
@@ -37,7 +135,7 @@ func setupRouter() *echo.Echo {
 	e.Use(middleware.Recover())
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if c.Param("id") == "test" {
+			if c.Param("id") == "test1" {
 				return echo.NewHTTPError(401, "Unauthorized")
 			}
 			return next(c)
