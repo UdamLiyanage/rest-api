@@ -41,6 +41,19 @@ func getDeviceSchema(c echo.Context) error {
 	return c.JSON(200, schema)
 }
 
+func getDeviceSchemaActions(c echo.Context) error {
+	var crud Operations = Configuration{
+		Collection: actionCollection,
+	}
+	response, err := crud.Read(bson.M{
+		"schema": c.Param("id"),
+	})
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, response)
+}
+
 func createDeviceSchema(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceSchemaCollection,
