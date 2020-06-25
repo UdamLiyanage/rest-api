@@ -16,26 +16,26 @@ func (r *User) MarshalUser() ([]byte, error) {
 }
 
 type User struct {
-	FirstName   string      `json:"firstName"`
-	LastName    string      `json:"lastName"`
-	AccountType string      `json:"accountType"`
-	Email       string      `json:"email"`
-	Address     UserAddress `json:"address"`
-	PhoneNumber string      `json:"phoneNumber"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	FirstName   string      `json:"firstName" bson:"firstName"`
+	LastName    string      `json:"lastName" bson:"lastName"`
+	AccountType string      `json:"accountType" bson:"accountType"`
+	Email       string      `json:"email" bson:"email"`
+	Address     UserAddress `json:"address" bson:"address"`
+	PhoneNumber string      `json:"phoneNumber" bson:"phoneNumber"`
+	CreatedAt   time.Time   `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at" bson:"updated_at"`
 }
 
 type UserAddress struct {
-	Primary   Billing `json:"primary"`
-	Secondary Billing `json:"secondary"`
-	Billing   Billing `json:"billing"`
+	Primary   Billing `json:"primary" bson:"primary"`
+	Secondary Billing `json:"secondary" bson:"secondary"`
+	Billing   Billing `json:"billing" bson:"billing"`
 }
 
 type Billing struct {
-	Line1    string `json:"line_1"`
-	Line2    string `json:"line_2"`
-	City     string `json:"city"`
-	Postcode string `json:"postcode"`
-	Country  string `json:"country"`
+	Line1    string `json:"line_1" bson:"line_1"`
+	Line2    string `json:"line_2" bson:"line_2"`
+	City     string `json:"city" bson:"city"`
+	Postcode string `json:"postcode" bson:"postcode"`
+	Country  string `json:"country" bson:"country"`
 }

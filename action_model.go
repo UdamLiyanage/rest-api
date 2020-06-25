@@ -16,9 +16,9 @@ func (r *Action) MarshalAction() ([]byte, error) {
 }
 
 type Action struct {
-	Schema        string      `json:"schema"`
-	Type          string      `json:"type"`
-	Configuration interface{} `json:"configuration"`
-	CreatedAt     time.Time   `json:"created_at"`
-	UpdatedAt     time.Time   `json:"updated_at"`
+	Schema        string      `json:"schema" bson:"schema"`
+	Type          string      `json:"type" bson:"type"`
+	Configuration interface{} `json:"configuration" bson:"configuration"`
+	CreatedAt     time.Time   `json:"created_at" bson:"created_at"`
+	UpdatedAt     time.Time   `json:"updated_at" bson:"updated_at"`
 }

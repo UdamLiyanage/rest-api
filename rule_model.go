@@ -16,15 +16,15 @@ func (r *Rule) MarshalRule() ([]byte, error) {
 }
 
 type Rule struct {
-	Device    string    `json:"device"`
-	Actions   []string  `json:"actions"`
-	Rule      RuleClass `json:"rule"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Device    string    `json:"device" bson:"device"`
+	Actions   []string  `json:"actions" bson:"actions"`
+	Rule      RuleClass `json:"rule" bson:"rule"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
 type RuleClass struct {
-	Parameter string      `json:"parameter"`
-	Condition string      `json:"condition"`
-	Value     interface{} `json:"value"`
+	Parameter string      `json:"parameter" bson:"parameter"`
+	Condition string      `json:"condition" bson:"condition"`
+	Value     interface{} `json:"value" bson:"value"`
 }
