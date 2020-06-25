@@ -54,7 +54,9 @@ func getPemCert(token *jwt.Token) (string, error) {
 	if err != nil {
 		return cert, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var jwks = Jwks{}
 	err = json.NewDecoder(resp.Body).Decode(&jwks)
