@@ -83,11 +83,11 @@ func createUser(c echo.Context) error {
 	}
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-	response, err := crud.Create(user)
+	_, err = crud.Create(user)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(201, response)
+	return c.JSON(201, user)
 }
 
 func updateUser(c echo.Context) error {

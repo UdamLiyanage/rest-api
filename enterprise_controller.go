@@ -55,11 +55,11 @@ func createEnterprise(c echo.Context) error {
 	}
 	enterprise.CreatedAt = time.Now()
 	enterprise.UpdatedAt = time.Now()
-	response, err := crud.Create(enterprise)
+	_, err = crud.Create(enterprise)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(201, response)
+	return c.JSON(201, enterprise)
 }
 
 func updateEnterprise(c echo.Context) error {

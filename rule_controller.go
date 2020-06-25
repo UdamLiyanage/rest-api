@@ -55,11 +55,11 @@ func createRule(c echo.Context) error {
 	}
 	rule.CreatedAt = time.Now()
 	rule.UpdatedAt = time.Now()
-	response, err := crud.Create(rule)
+	_, err = crud.Create(rule)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(201, response)
+	return c.JSON(201, rule)
 }
 
 func updateRule(c echo.Context) error {

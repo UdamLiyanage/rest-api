@@ -68,11 +68,11 @@ func createDevice(c echo.Context) error {
 	}
 	device.CreatedAt = time.Now()
 	device.UpdatedAt = time.Now()
-	response, err := crud.Create(device)
+	_, err = crud.Create(device)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(201, response)
+	return c.JSON(201, device)
 }
 
 func updateDevice(c echo.Context) error {

@@ -55,11 +55,11 @@ func createAction(c echo.Context) error {
 	}
 	action.CreatedAt = time.Now()
 	action.UpdatedAt = time.Now()
-	response, err := crud.Create(action)
+	_, err = crud.Create(action)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(201, response)
+	return c.JSON(201, action)
 }
 
 func updateAction(c echo.Context) error {

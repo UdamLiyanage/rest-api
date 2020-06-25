@@ -68,11 +68,11 @@ func createDeviceSchema(c echo.Context) error {
 	}
 	schema.CreatedAt = time.Now()
 	schema.UpdatedAt = time.Now()
-	response, err := crud.Create(schema)
+	_, err = crud.Create(schema)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(201, response)
+	return c.JSON(201, schema)
 }
 
 func updateDeviceSchema(c echo.Context) error {
