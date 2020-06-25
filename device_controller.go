@@ -41,6 +41,19 @@ func getDevice(c echo.Context) error {
 	return c.JSON(200, device)
 }
 
+func getDeviceRules(c echo.Context) error {
+	var crud Operations = Configuration{
+		Collection: ruleCollection,
+	}
+	response, err := crud.Read(bson.M{
+		"device": c.Param("id"),
+	})
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, response)
+}
+
 func createDevice(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: deviceCollection,
