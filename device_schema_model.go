@@ -21,6 +21,8 @@ type DeviceSchema struct {
 	Name                  string        `json:"name"`
 	Type                  string        `json:"type"`
 	Public                string        `json:"public"`
+	User                  string        `json:"user"`
+	Enterprise            string        `json:"enterprise"`
 	Communication         Communication `json:"communication"`
 	Commands              []Command     `json:"commands"`
 	Parameters            []Parameter   `json:"parameters"`
