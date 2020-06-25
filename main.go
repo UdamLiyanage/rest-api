@@ -109,7 +109,7 @@ func setupRouter() *echo.Echo {
 						panic(err)
 					}
 					x := t.Claims.(jwt.MapClaims)
-					println(x[os.Getenv("AUTH0_AUDIENCE")+"/email"].(string))
+					println(x["https://abydub.com/email"].(string))
 
 					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 					return result, nil
