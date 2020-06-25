@@ -49,7 +49,7 @@ func init() {
 
 func getPemCert(token *jwt.Token) (string, error) {
 	cert := ""
-	resp, err := http.Get("https://dev-althinect-smart-socket.us.auth0.com/.well-known/jwks.json")
+	resp, err := http.Get(os.Getenv("AUTH0_CERT"))
 
 	if err != nil {
 		return cert, err
@@ -81,15 +81,14 @@ func setupRouter() *echo.Echo {
 	e := echo.New()
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			//jwtMiddleware.HandlerWithNext(c.Response().Writer, c.Request(), nil)
 			jM := jwtmiddleware.New(jwtmiddleware.Options{
 				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-					aud := "https://api.abydub.com"
+					aud := os.Getenv("AUTH0_AUDIENCE")
 					checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
 					if !checkAud {
 						return token, errors.New("invalid audience")
 					}
-					iss := "https://dev-althinect-smart-socket.us.auth0.com/"
+					iss := os.Getenv("AUTH0_ISSUER")
 					checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 					if !checkIss {
 						return token, errors.New("invalid issuer")
@@ -108,7 +107,7 @@ func setupRouter() *echo.Echo {
 						panic(err)
 					}
 					x := t.Claims.(jwt.MapClaims)
-					println(x["https://abydub.com/email"].(string))
+					println(x[os.Getenv("AUTH0_AUDIENCE")+"/email"].(string))
 
 					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 					return result, nil
