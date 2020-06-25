@@ -56,6 +56,19 @@ func getUserDevices(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
+func getUserDeviceSchemas(c echo.Context) error {
+	var crud Operations = Configuration{
+		Collection: deviceSchemaCollection,
+	}
+	response, err := crud.Read(bson.M{
+		"user": c.Param("id"),
+	})
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, response)
+}
+
 func createUser(c echo.Context) error {
 	var crud Operations = Configuration{
 		Collection: userCollection,

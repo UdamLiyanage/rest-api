@@ -152,6 +152,7 @@ func setupRouter() *echo.Echo {
 	e.GET("/rules/:id", getRule)
 
 	e.GET("/users/:id/devices", getUserDevices)
+	e.GET("/users/:id/device-schemas", getUserDeviceSchemas)
 
 	e.POST("/enterprises", createEnterprise)
 	e.POST("/users", createUser)
