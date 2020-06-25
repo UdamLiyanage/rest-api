@@ -83,6 +83,7 @@ func setupRouter() *echo.Echo {
 	e := echo.New()
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			var email string
 			jM := jwtmiddleware.New(jwtmiddleware.Options{
 				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 					aud := os.Getenv("AUTH0_AUDIENCE")
@@ -109,6 +110,7 @@ func setupRouter() *echo.Echo {
 						panic(err)
 					}
 					x := t.Claims.(jwt.MapClaims)
+					email = x["https://abydub.com/email"].(string)
 					println(x["https://abydub.com/email"].(string))
 
 					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
@@ -118,7 +120,7 @@ func setupRouter() *echo.Echo {
 			})
 			err := jM.CheckJWT(c.Response().Writer, c.Request())
 			if err != nil {
-				panic(err)
+				return echo.NewHTTPError(500, "Internal server error!")
 			}
 			return next(c)
 		}
@@ -127,8 +129,6 @@ func setupRouter() *echo.Echo {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "time=${time_rfc3339} method=${method}, uri=${uri}, status=${status} path=${path} latency=${latency_human}\n",
 	}))
-
-	e.Use(middleware.Recover())
 
 	e.GET("/enterprises", getEnterprises)
 	e.GET("/enterprises/:id", getEnterprise)
