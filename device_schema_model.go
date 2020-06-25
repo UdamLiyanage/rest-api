@@ -29,26 +29,19 @@ type DeviceSchema struct {
 	Description           string        `json:"description" bson:"description"`
 	LatestFirmwareVersion string        `json:"latest_firmware_version" bson:"latest_firmware_version"`
 	CommandFormat         CommandFormat `json:"command_format" bson:"command_format"`
-	CreatedAt             time.Time     `json:"createdAt" bson:"createdAt"`
-	UpdatedAt             time.Time     `json:"updatedAt" bson:"updatedAt"`
+	CreatedAt             time.Time     `json:"created_at" bson:"created_at"`
+	UpdatedAt             time.Time     `json:"updated_at" bson:"updated_at"`
 }
 
 type CommandFormat struct {
-	FormatType string  `json:"format_type" bson:"format_type"`
-	Payload    Payload `json:"payload" bson:"payload"`
-}
-
-type Payload struct {
-	Temp  string `json:"temp" bson:"temp"`
-	Power string `json:"power" bson:"power"`
+	FormatType string                 `json:"format_type" bson:"format_type"`
+	Payload    map[string]interface{} `json:"payload" bson:"payload"`
 }
 
 type Command struct {
-	Urn       string    `json:"urn" bson:"urn"`
-	Name      string    `json:"name" bson:"name"`
-	Type      string    `json:"type" bson:"type"`
-	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt" bson:"updatedAt"`
+	Urn  string `json:"urn" bson:"urn"`
+	Name string `json:"name" bson:"name"`
+	Type string `json:"type" bson:"type"`
 }
 
 type Communication struct {
@@ -68,10 +61,8 @@ type Authentication struct {
 }
 
 type Parameter struct {
-	Urn       string    `json:"urn" bson:"urn"`
-	Name      string    `json:"name" bson:"name"`
-	Parameter string    `json:"parameter" bson:"parameter"`
-	DataType  string    `json:"dataType" bson:"dataType"`
-	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt" bson:"updatedAt"`
+	Urn       string `json:"urn" bson:"urn"`
+	Name      string `json:"name" bson:"name"`
+	Parameter string `json:"parameter" bson:"parameter"`
+	DataType  string `json:"data_type" bson:"data_type"`
 }

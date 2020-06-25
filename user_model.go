@@ -16,12 +16,12 @@ func (r *User) MarshalUser() ([]byte, error) {
 }
 
 type User struct {
-	FirstName   string      `json:"firstName" bson:"firstName"`
-	LastName    string      `json:"lastName" bson:"lastName"`
-	AccountType string      `json:"accountType" bson:"accountType"`
+	FirstName   string      `json:"first_name" bson:"first_name"`
+	LastName    string      `json:"last_name" bson:"last_name"`
+	AccountType string      `json:"account_type" bson:"account_type"`
 	Email       string      `json:"email" bson:"email"`
 	Address     UserAddress `json:"address" bson:"address"`
-	PhoneNumber string      `json:"phoneNumber" bson:"phoneNumber"`
+	PhoneNumber string      `json:"phone_number" bson:"phone_number"`
 	CreatedAt   time.Time   `json:"created_at" bson:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at" bson:"updated_at"`
 }
