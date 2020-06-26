@@ -16,7 +16,6 @@ func (r *Device) MarshalDevice() ([]byte, error) {
 }
 
 type Device struct {
-	ID                 string    `json:"_id,omitempty" bson:"_id"`
 	Serial             string    `json:"serial" bson:"serial"`
 	Urn                string    `json:"urn" bson:"urn"`
 	Schema             string    `json:"schema" bson:"schema"`

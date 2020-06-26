@@ -16,7 +16,7 @@ func (r *DeviceSchema) MarshalDeviceSchema() ([]byte, error) {
 }
 
 type DeviceSchema struct {
-	ID                    string        `json:"_id,omitempty" bson:"_id"`
+	Urn                   string        `json:"urn" bson:"urn"`
 	Version               string        `json:"version" bson:"version"`
 	Name                  string        `json:"name" bson:"name"`
 	Type                  string        `json:"type" bson:"type"`
