@@ -81,7 +81,17 @@ func getPemCert(token *jwt.Token) (string, error) {
 
 func setupRouter() *echo.Echo {
 	e := echo.New()
-	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+
+	e.Use(middleware.RequestID())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "time=${time_rfc3339} method=${method}, uri=${uri}, status=${status} path=${path} latency=${latency_human}\n",
+	}))
+
+	e.POST("/auth0/users", createUser)
+
+	authenticatedGroup := e.Group("/api/v1")
+
+	authenticatedGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var email string
 			jM := jwtmiddleware.New(jwtmiddleware.Options{
@@ -99,7 +109,7 @@ func setupRouter() *echo.Echo {
 
 					cert, err := getPemCert(token)
 					if err != nil {
-						panic(err.Error())
+						return nil, err
 					}
 
 					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
@@ -107,7 +117,7 @@ func setupRouter() *echo.Echo {
 						return res, nil
 					})
 					if err != nil {
-						panic(err)
+						return nil, err
 					}
 					x := t.Claims.(jwt.MapClaims)
 					email = x["https://abydub.com/email"].(string)
@@ -125,50 +135,46 @@ func setupRouter() *echo.Echo {
 			return next(c)
 		}
 	})
-	e.Use(middleware.RequestID())
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "time=${time_rfc3339} method=${method}, uri=${uri}, status=${status} path=${path} latency=${latency_human}\n",
-	}))
 
-	e.GET("/enterprises", getEnterprises)
-	e.GET("/enterprises/:id", getEnterprise)
-	e.GET("/users", getUsers)
-	e.GET("/users/:id", getUser)
-	e.GET("/devices", getDevices)
-	e.GET("/devices/:id", getDevice)
-	e.GET("/device-schemas", getDeviceSchemas)
-	e.GET("/device-schemas/:id", getDeviceSchema)
-	e.GET("/actions", getActions)
-	e.GET("/actions/:id", getAction)
-	e.GET("/rules", getRules)
-	e.GET("/rules/:id", getRule)
+	authenticatedGroup.GET("/enterprises", getEnterprises)
+	authenticatedGroup.GET("/enterprises/:id", getEnterprise)
+	authenticatedGroup.GET("/users", getUsers)
+	authenticatedGroup.GET("/users/:id", getUser)
+	authenticatedGroup.GET("/devices", getDevices)
+	authenticatedGroup.GET("/devices/:id", getDevice)
+	authenticatedGroup.GET("/device-schemas", getDeviceSchemas)
+	authenticatedGroup.GET("/device-schemas/:id", getDeviceSchema)
+	authenticatedGroup.GET("/actions", getActions)
+	authenticatedGroup.GET("/actions/:id", getAction)
+	authenticatedGroup.GET("/rules", getRules)
+	authenticatedGroup.GET("/rules/:id", getRule)
 
-	e.GET("/users/:id/devices", getUserDevices)
-	e.GET("/users/:id/device-schemas", getUserDeviceSchemas)
-	e.GET("/devices/:id/rules", getDeviceRules)
-	e.GET("/device-schemas/:id/actions", getDeviceSchemaActions)
-	e.GET("/actions/:id/rules", getActionRules)
+	authenticatedGroup.GET("/users/:id/devices", getUserDevices)
+	authenticatedGroup.GET("/users/:id/device-schemas", getUserDeviceSchemas)
+	authenticatedGroup.GET("/devices/:id/rules", getDeviceRules)
+	authenticatedGroup.GET("/device-schemas/:id/actions", getDeviceSchemaActions)
+	authenticatedGroup.GET("/actions/:id/rules", getActionRules)
 
-	e.POST("/enterprises", createEnterprise)
-	e.POST("/users", createUser)
-	e.POST("/devices", createDevice)
-	e.POST("/device-schemas", createDeviceSchema)
-	e.POST("/actions", createAction)
-	e.POST("/rules", createRule)
+	authenticatedGroup.POST("/enterprises", createEnterprise)
+	authenticatedGroup.POST("/users", createUser)
+	authenticatedGroup.POST("/devices", createDevice)
+	authenticatedGroup.POST("/device-schemas", createDeviceSchema)
+	authenticatedGroup.POST("/actions", createAction)
+	authenticatedGroup.POST("/rules", createRule)
 
-	e.PUT("/enterprises/:id", updateEnterprise)
-	e.PUT("/users/:id", updateUser)
-	e.PUT("/devices/:id", updateDevice)
-	e.PUT("/device-schemas/:id", updateDeviceSchema)
-	e.PUT("/actions/:id", updateAction)
-	e.PUT("/rules/:id", updateRule)
+	authenticatedGroup.PUT("/enterprises/:id", updateEnterprise)
+	authenticatedGroup.PUT("/users/:id", updateUser)
+	authenticatedGroup.PUT("/devices/:id", updateDevice)
+	authenticatedGroup.PUT("/device-schemas/:id", updateDeviceSchema)
+	authenticatedGroup.PUT("/actions/:id", updateAction)
+	authenticatedGroup.PUT("/rules/:id", updateRule)
 
-	e.DELETE("/enterprises/:id", deleteEnterprise)
-	e.DELETE("/users/:id", deleteUser)
-	e.DELETE("/devices/:id", deleteDevice)
-	e.DELETE("/device-schemas/:id", deleteDeviceSchema)
-	e.DELETE("/actions/:id", deleteAction)
-	e.DELETE("/rules/:id", deleteRule)
+	authenticatedGroup.DELETE("/enterprises/:id", deleteEnterprise)
+	authenticatedGroup.DELETE("/users/:id", deleteUser)
+	authenticatedGroup.DELETE("/devices/:id", deleteDevice)
+	authenticatedGroup.DELETE("/device-schemas/:id", deleteDeviceSchema)
+	authenticatedGroup.DELETE("/actions/:id", deleteAction)
+	authenticatedGroup.DELETE("/rules/:id", deleteRule)
 
 	return e
 }
