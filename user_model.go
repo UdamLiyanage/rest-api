@@ -17,6 +17,7 @@ func (r *User) MarshalUser() ([]byte, error) {
 
 type User struct {
 	Urn         string      `json:"urn" bson:"urn"`
+	Username    string      `json:"username" bson:"username"`
 	FirstName   string      `json:"first_name" bson:"first_name"`
 	LastName    string      `json:"last_name" bson:"last_name"`
 	AccountType string      `json:"account_type" bson:"account_type"`
