@@ -102,9 +102,6 @@ func authorizeRequest(c echo.Context) bool {
 		if err != nil {
 			log.Error(err)
 		}
-		defer func() {
-			_ = resp.Body.Close()
-		}()
 		if resp.StatusCode == http.StatusOK {
 			return true
 		}
@@ -125,9 +122,6 @@ func authorizeRequest(c echo.Context) bool {
 			log.Error(err)
 			return false
 		}
-		defer func() {
-			_ = resp.Body.Close()
-		}()
 		if resp.StatusCode == http.StatusOK {
 			return true
 		}
