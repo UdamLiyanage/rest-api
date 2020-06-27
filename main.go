@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -80,11 +81,19 @@ func getPemCert(token *jwt.Token) (string, error) {
 	return cert, nil
 }
 
-func authorizeRequest(c echo.Context) bool {
+func authorizeRequest(c echo.Context, userUrn string) bool {
+	if c.Param("id") == "" && c.Request().Method != "POST" { //Index Method
+		return true
+	}
+	requestUrl := func() string {
+		basePath := os.Getenv("AUTHORIZATION_SERVER_API") + c.Path()
+		log.Info(basePath + "?userUrn=" + userUrn + "&resourceUrn=" + c.Param("id"))
+		return basePath + "?userUrn=" + userUrn + "&schemaUrn=" + c.Param("id")
+	}
 	createOp := func() bool {
-		var responseBody map[string]interface{}
+		var responseBody map[string]string
 		println("Create Op")
-		resp, err := http.Post(os.Getenv("AUTHORIZATION_SERVER_API")+c.Path(), "application/json", c.Request().Body)
+		resp, err := http.Post(requestUrl(), "application/json", c.Request().Body)
 		if err != nil {
 			log.Error(err)
 			return false
@@ -92,20 +101,21 @@ func authorizeRequest(c echo.Context) bool {
 		defer func() {
 			_ = resp.Body.Close()
 		}()
+		log.Info(resp.StatusCode)
 		err = json.NewDecoder(resp.Body).Decode(&responseBody)
 		if err != nil {
 			log.Error(err)
 			return false
 		}
-		c.Set("urn", responseBody["urn"])
-		if resp.StatusCode == http.StatusOK {
+		c.Set("resourceUrn", responseBody["urn"])
+		if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
 			return true
 		}
 		return false
 	}
 	readOp := func() bool {
 		println("Read Op")
-		resp, err := http.Get(os.Getenv("AUTHORIZATION_SERVER_API") + c.Path())
+		resp, err := http.Get(requestUrl())
 		if err != nil {
 			log.Error(err)
 		}
@@ -118,7 +128,7 @@ func authorizeRequest(c echo.Context) bool {
 		println("Delete Op")
 		client := &http.Client{}
 
-		req, err := http.NewRequest("DELETE", "http://www.example.com/bucket/sample", nil)
+		req, err := http.NewRequest("DELETE", requestUrl(), nil)
 		if err != nil {
 			log.Error(err)
 			return false
@@ -161,6 +171,7 @@ func setupRouter() *echo.Echo {
 
 	authenticatedGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			var userUrn string
 			jM := jwtmiddleware.New(jwtmiddleware.Options{
 				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 					aud := os.Getenv("AUTH0_AUDIENCE")
@@ -179,14 +190,16 @@ func setupRouter() *echo.Echo {
 						return nil, err
 					}
 
-					/*t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 						res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 						return res, nil
 					})
 					if err != nil {
 						return nil, err
 					}
-					x := t.Claims.(jwt.MapClaims)*/
+					x := t.Claims.(jwt.MapClaims)
+					sub := strings.Split(x["sub"].(string), "|")
+					userUrn = sub[1]
 
 					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 					return result, nil
@@ -197,7 +210,7 @@ func setupRouter() *echo.Echo {
 			if err != nil {
 				return echo.NewHTTPError(500, "Internal server error!")
 			}
-			if authorizeRequest(c) != true {
+			if authorizeRequest(c, userUrn) != true {
 				return echo.NewHTTPError(401, "Unauthorized")
 			}
 			return next(c)
