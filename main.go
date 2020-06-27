@@ -8,6 +8,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"os"
@@ -81,24 +82,64 @@ func getPemCert(token *jwt.Token) (string, error) {
 
 func authorizeRequest(c echo.Context) bool {
 	createOp := func() bool {
-		return true
+		println("Create Op")
+		resp, err := http.Post(os.Getenv("AUTHORIZATION_SERVER_API")+c.Path(), "application/json", c.Request().Body)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+		if resp.StatusCode == http.StatusOK {
+			return true
+		}
+		return false
 	}
 	readOp := func() bool {
-		return true
-	}
-	updateOp := func() bool {
-		return true
+		println("Read Op")
+		resp, err := http.Get(os.Getenv("AUTHORIZATION_SERVER_API") + c.Path())
+		if err != nil {
+			log.Error(err)
+		}
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+		if resp.StatusCode == http.StatusOK {
+			return true
+		}
+		return false
 	}
 	deleteOp := func() bool {
-		return true
+		println("Delete Op")
+		client := &http.Client{}
+
+		req, err := http.NewRequest("DELETE", "http://www.example.com/bucket/sample", nil)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+		if resp.StatusCode == http.StatusOK {
+			return true
+		}
+		return false
 	}
 	switch c.Request().Method {
-	case "CREATE":
-		return createOp()
-	case "READ":
+	case "GET":
 		return readOp()
-	case "UPDATE":
-		return updateOp()
+	case "POST":
+		return createOp()
+	case "PUT":
+		return readOp()
 	case "DELETE":
 		return deleteOp()
 	}
@@ -155,7 +196,7 @@ func setupRouter() *echo.Echo {
 			if err != nil {
 				return echo.NewHTTPError(500, "Internal server error!")
 			}
-			if !authorizeRequest(c) {
+			if authorizeRequest(c) != true {
 				return echo.NewHTTPError(401, "Unauthorized")
 			}
 			return next(c)
