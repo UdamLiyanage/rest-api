@@ -93,7 +93,6 @@ func setupRouter() *echo.Echo {
 
 	authenticatedGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			var email string
 			jM := jwtmiddleware.New(jwtmiddleware.Options{
 				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 					aud := os.Getenv("AUTH0_AUDIENCE")
@@ -112,16 +111,14 @@ func setupRouter() *echo.Echo {
 						return nil, err
 					}
 
-					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+					/*t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 						res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 						return res, nil
 					})
 					if err != nil {
 						return nil, err
 					}
-					x := t.Claims.(jwt.MapClaims)
-					email = x["https://abydub.com/email"].(string)
-					println(x["https://abydub.com/email"].(string))
+					x := t.Claims.(jwt.MapClaims)*/
 
 					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 					return result, nil
