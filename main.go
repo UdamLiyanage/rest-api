@@ -82,6 +82,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 
 func authorizeRequest(c echo.Context) bool {
 	createOp := func() bool {
+		var responseBody map[string]interface{}
 		println("Create Op")
 		resp, err := http.Post(os.Getenv("AUTHORIZATION_SERVER_API")+c.Path(), "application/json", c.Request().Body)
 		if err != nil {
@@ -91,6 +92,12 @@ func authorizeRequest(c echo.Context) bool {
 		defer func() {
 			_ = resp.Body.Close()
 		}()
+		err = json.NewDecoder(resp.Body).Decode(&responseBody)
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+		c.Set("urn", responseBody["urn"])
 		if resp.StatusCode == http.StatusOK {
 			return true
 		}
