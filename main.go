@@ -79,6 +79,32 @@ func getPemCert(token *jwt.Token) (string, error) {
 	return cert, nil
 }
 
+func authorizeRequest(c echo.Context) bool {
+	createOp := func() bool {
+		return true
+	}
+	readOp := func() bool {
+		return true
+	}
+	updateOp := func() bool {
+		return true
+	}
+	deleteOp := func() bool {
+		return true
+	}
+	switch c.Request().Method {
+	case "CREATE":
+		return createOp()
+	case "READ":
+		return readOp()
+	case "UPDATE":
+		return updateOp()
+	case "DELETE":
+		return deleteOp()
+	}
+	return false
+}
+
 func setupRouter() *echo.Echo {
 	e := echo.New()
 
@@ -128,6 +154,9 @@ func setupRouter() *echo.Echo {
 			err := jM.CheckJWT(c.Response().Writer, c.Request())
 			if err != nil {
 				return echo.NewHTTPError(500, "Internal server error!")
+			}
+			if !authorizeRequest(c) {
+				return echo.NewHTTPError(401, "Unauthorized")
 			}
 			return next(c)
 		}
