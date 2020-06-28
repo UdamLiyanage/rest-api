@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
@@ -93,7 +94,11 @@ func authorizeRequest(c echo.Context, userUrn string) bool {
 	createOp := func() bool {
 		var responseBody map[string]string
 		println("Create Op")
-		resp, err := http.Post(requestUrl(), "application/json", c.Request().Body)
+		body, err := json.Marshal(c.Request().Body)
+		if err != nil {
+			panic(err)
+		}
+		resp, err := http.Post(requestUrl(), "application/json", bytes.NewBuffer(body))
 		if err != nil {
 			log.Error(err)
 			return false

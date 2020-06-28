@@ -53,6 +53,7 @@ func createEnterprise(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	enterprise.Urn = c.Get("resourceUrn").(string)
 	enterprise.CreatedAt = time.Now()
 	enterprise.UpdatedAt = time.Now()
 	_, err = crud.Create(enterprise)

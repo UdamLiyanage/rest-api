@@ -81,6 +81,7 @@ func createUser(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	user.Urn = c.Get("resourceUrn").(string)
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 	_, err = crud.Create(user)

@@ -53,6 +53,7 @@ func createRule(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	rule.Urn = c.Get("resourceUrn").(string)
 	rule.CreatedAt = time.Now()
 	rule.UpdatedAt = time.Now()
 	_, err = crud.Create(rule)

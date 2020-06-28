@@ -66,6 +66,7 @@ func createAction(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	action.Urn = c.Get("resourceUrn").(string)
 	action.CreatedAt = time.Now()
 	action.UpdatedAt = time.Now()
 	_, err = crud.Create(action)

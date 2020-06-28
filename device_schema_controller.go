@@ -66,6 +66,7 @@ func createDeviceSchema(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	schema.Urn = c.Get("resourceUrn").(string)
 	schema.CreatedAt = time.Now()
 	schema.UpdatedAt = time.Now()
 	_, err = crud.Create(schema)
