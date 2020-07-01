@@ -83,7 +83,8 @@ func getPemCert(token *jwt.Token) (string, error) {
 }
 
 func authorizeRequest(c echo.Context, userUrn string) bool {
-	if c.Param("id") == "" && c.Request().Method != "POST" { //Index Method
+	if (c.Param("id") == "" && c.Request().Method != "POST") || len(strings.Split(c.Path(), "/")) > 5 {
+		//Index method or User specific show
 		return true
 	}
 	requestUrl := func() string {
