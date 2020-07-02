@@ -87,6 +87,7 @@ func authorizeRequest(c echo.Context, userUrn string) bool {
 		//Index method or User specific show
 		return true
 	}
+	c.Set("userUrn", userUrn)
 	requestUrl := func() string {
 		basePath := os.Getenv("AUTHORIZATION_SERVER_API") + c.Path()
 		log.Info(basePath + "?userUrn=" + userUrn + "&resourceUrn=" + c.Param("id"))
