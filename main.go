@@ -237,8 +237,8 @@ func setupRouter() *echo.Echo {
 	authenticatedGroup.GET("/rules", getRules)
 	authenticatedGroup.GET("/rules/:id", getRule)
 
-	authenticatedGroup.GET("/users/:id/devices", getUserDevices)
-	authenticatedGroup.GET("/users/:id/device-schemas", getUserDeviceSchemas)
+	authenticatedGroup.GET("/users/devices", getUserDevices)
+	authenticatedGroup.GET("/users/device-schemas", getUserDeviceSchemas)
 	authenticatedGroup.GET("/devices/:id/rules", getDeviceRules)
 	authenticatedGroup.GET("/device-schemas/:id/actions", getDeviceSchemaActions)
 	authenticatedGroup.GET("/actions/:id/rules", getActionRules)

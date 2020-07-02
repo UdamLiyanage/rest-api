@@ -48,7 +48,7 @@ func getUserDevices(c echo.Context) error {
 		}
 	)
 	response, err := crud.Read(bson.M{
-		"user": c.Param("id"),
+		"user": c.Get("userUrn").(string),
 	})
 	if err != nil {
 		return c.JSON(500, err)
@@ -61,7 +61,7 @@ func getUserDeviceSchemas(c echo.Context) error {
 		Collection: deviceSchemaCollection,
 	}
 	response, err := crud.Read(bson.M{
-		"user": c.Param("id"),
+		"user": c.Get("userUrn").(string),
 	})
 	if err != nil {
 		return c.JSON(500, err)
