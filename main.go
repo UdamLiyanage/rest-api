@@ -123,6 +123,7 @@ func authenticateRequest(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return echo.NewHTTPError(500, "Internal server error!")
 		}
+		c.Set("userUrn", userUrn)
 		return next(c)
 	}
 }
