@@ -232,7 +232,8 @@ func setupRouter() *echo.Echo {
 	showGroup.Use(authenticateRequest)
 
 	saveGroup := e.Group("/api/v1")
-	showGroup.Use(authenticateRequest)
+	saveGroup.Use(authenticateRequest)
+	saveGroup.Use(authorizeRequest)
 
 	updateGroup := e.Group("/api/v1")
 	updateGroup.Use(authenticateRequest)
