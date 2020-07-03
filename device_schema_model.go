@@ -1,9 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-	"time"
-)
+import "encoding/json"
 
 func UnmarshalDeviceSchema(data []byte) (DeviceSchema, error) {
 	var r DeviceSchema
@@ -11,58 +8,49 @@ func UnmarshalDeviceSchema(data []byte) (DeviceSchema, error) {
 	return r, err
 }
 
-func (r *DeviceSchema) MarshalDeviceSchema() ([]byte, error) {
+func (r *DeviceSchema) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }
 
 type DeviceSchema struct {
-	Urn                   string        `json:"urn" bson:"urn"`
-	Version               string        `json:"version" bson:"version"`
-	Name                  string        `json:"name" bson:"name"`
-	Type                  string        `json:"type" bson:"type"`
-	Public                string        `json:"public"bson:"public"`
-	User                  string        `json:"user" bson:"user"`
-	Enterprise            string        `json:"enterprise" bson:"enterprise"`
-	Communication         Communication `json:"communication" bson:"communication"`
-	Commands              []Command     `json:"commands" bson:"commands"`
-	Parameters            []Parameter   `json:"parameters" bson:"parameters"`
-	Description           string        `json:"description" bson:"description"`
-	LatestFirmwareVersion string        `json:"latest_firmware_version" bson:"latest_firmware_version"`
-	CommandFormat         CommandFormat `json:"command_format" bson:"command_format"`
-	CreatedAt             time.Time     `json:"created_at" bson:"created_at"`
-	UpdatedAt             time.Time     `json:"updated_at" bson:"updated_at"`
-}
-
-type CommandFormat struct {
-	FormatType string                 `json:"format_type" bson:"format_type"`
-	Payload    map[string]interface{} `json:"payload" bson:"payload"`
+	ID                    string        `json:"_id"`
+	Version               string        `json:"version"`
+	Name                  string        `json:"name"`
+	Type                  string        `json:"type"`
+	Public                string        `json:"public"`
+	Communication         Communication `json:"communication"`
+	Description           string        `json:"description"`
+	Uid                   string        `json:"uid"`
+	LatestFirmwareVersion string        `json:"latest_firmware_version"`
+	Commands              []Command     `json:"commands"`
+	Parameters            []Parameter   `json:"parameters"`
 }
 
 type Command struct {
-	Urn  string `json:"urn" bson:"urn"`
-	Name string `json:"name" bson:"name"`
-	Type string `json:"type" bson:"type"`
+	Name        string                 `json:"name"`
+	DisplayName string                 `json:"display_name"`
+	Type        string                 `json:"type"`
+	Attributes  map[string]interface{} `json:"attributes,omitempty"`
 }
 
 type Communication struct {
-	Protocol    string      `json:"protocol" bson:"protocol"`
-	Credentials Credentials `json:"credentials" bson:"credentials"`
+	Protocol    string      `json:"protocol"`
+	Credentials Credentials `json:"credentials"`
 }
 
 type Credentials struct {
-	URL            string         `json:"url" bson:"url"`
-	Authentication Authentication `json:"authentication" bson:"authentication"`
+	URL            string         `json:"url"`
+	Authentication Authentication `json:"authentication"`
 }
 
 type Authentication struct {
-	Type     string `json:"type" bson:"type"`
-	Username string `json:"username" bson:"username"`
-	Password string `json:"password" bson:"password"`
+	Type     string `json:"type"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type Parameter struct {
-	Urn       string `json:"urn" bson:"urn"`
-	Name      string `json:"name" bson:"name"`
-	Parameter string `json:"parameter" bson:"parameter"`
-	DataType  string `json:"data_type" bson:"data_type"`
+	Name      string `json:"name"`
+	Parameter string `json:"parameter"`
+	DataType  string `json:"data_type"`
 }
