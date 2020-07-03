@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
@@ -9,7 +8,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"os"
@@ -130,7 +128,7 @@ func authenticateRequest(next echo.HandlerFunc) echo.HandlerFunc {
 
 func authorizeRequest(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		authStatus := false
+		/*authStatus := false
 		requestUrl := func() string {
 			basePath := os.Getenv("AUTHORIZATION_SERVER_API") + c.Path()
 			log.Info(basePath + "?userUrn=" + c.Get("userUrn").(string) + "&resourceUrn=" + c.Param("id"))
@@ -207,7 +205,7 @@ func authorizeRequest(next echo.HandlerFunc) echo.HandlerFunc {
 
 		if !authStatus {
 			return echo.NewHTTPError(401, "Unauthorized")
-		}
+		}*/
 		return next(c)
 	}
 }
