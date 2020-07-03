@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -66,7 +67,8 @@ func createAction(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	action.Urn = c.Get("resourceUrn").(string)
+	//action.Urn = c.Get("resourceUrn").(string)
+	action.Urn = uuid.New().String()
 	action.CreatedAt = time.Now()
 	action.UpdatedAt = time.Now()
 	_, err = crud.Create(action)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -53,7 +54,8 @@ func createEnterprise(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	enterprise.Urn = c.Get("resourceUrn").(string)
+	//enterprise.Urn = c.Get("resourceUrn").(string)
+	enterprise.Urn = uuid.New().String()
 	enterprise.CreatedAt = time.Now()
 	enterprise.UpdatedAt = time.Now()
 	_, err = crud.Create(enterprise)

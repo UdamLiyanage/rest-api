@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -66,8 +67,9 @@ func createDeviceSchema(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	schema.Urn = c.Get("resourceUrn").(string)
-	schema.User = c.Get("userUrn").(string)
+	//schema.Urn = c.Get("resourceUrn").(string)
+	//schema.User = c.Get("userUrn").(string)
+	schema.Urn = uuid.New().String()
 	schema.CreatedAt = time.Now()
 	schema.UpdatedAt = time.Now()
 	_, err = crud.Create(schema)

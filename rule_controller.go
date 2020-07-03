@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -53,7 +54,8 @@ func createRule(c echo.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	rule.Urn = c.Get("resourceUrn").(string)
+	//rule.Urn = c.Get("resourceUrn").(string)
+	rule.Urn = uuid.New().String()
 	rule.CreatedAt = time.Now()
 	rule.UpdatedAt = time.Now()
 	_, err = crud.Create(rule)
