@@ -82,7 +82,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 	return cert, nil
 }
 
-func authorizeRequest(c echo.Context, userUrn string) bool {
+/*func a(c echo.Context, userUrn string) bool {
 	if (c.Param("id") == "" && c.Request().Method != "POST") || len(strings.Split(c.Path(), "/")) > 5 {
 		//Index method or User specific show
 		return true
@@ -162,7 +162,7 @@ func authorizeRequest(c echo.Context, userUrn string) bool {
 		return deleteOp()
 	}
 	return false
-}
+}*/
 
 func authenticateRequest(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -204,6 +204,90 @@ func authenticateRequest(next echo.HandlerFunc) echo.HandlerFunc {
 		err := jM.CheckJWT(c.Response().Writer, c.Request())
 		if err != nil {
 			return echo.NewHTTPError(500, "Internal server error!")
+		}
+		return next(c)
+	}
+}
+
+func authorizeRequest(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		authStatus := false
+		requestUrl := func() string {
+			basePath := os.Getenv("AUTHORIZATION_SERVER_API") + c.Path()
+			log.Info(basePath + "?userUrn=" + c.Get("userUrn").(string) + "&resourceUrn=" + c.Param("id"))
+			return basePath + "?userUrn=" + c.Get("userUrn").(string) + "&schemaUrn=" + c.Param("id")
+		}
+		createOp := func() bool {
+			var responseBody map[string]string
+			println("Create Op")
+			body, err := json.Marshal(c.Request().Body)
+			if err != nil {
+				panic(err)
+			}
+			resp, err := http.Post(requestUrl(), "application/json", bytes.NewBuffer(body))
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+			log.Info(resp.StatusCode)
+			err = json.NewDecoder(resp.Body).Decode(&responseBody)
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+			c.Set("resourceUrn", responseBody["urn"])
+			if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
+				return true
+			}
+			return false
+		}
+		readOp := func() bool {
+			println("Read Op")
+			resp, err := http.Get(requestUrl())
+			if err != nil {
+				log.Error(err)
+			}
+			if resp.StatusCode == http.StatusOK {
+				return true
+			}
+			return false
+		}
+		deleteOp := func() bool {
+			println("Delete Op")
+			client := &http.Client{}
+
+			req, err := http.NewRequest("DELETE", requestUrl(), nil)
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+			if resp.StatusCode == http.StatusOK {
+				return true
+			}
+			return false
+		}
+		switch c.Request().Method {
+		case "GET":
+			authStatus = readOp()
+		case "POST":
+			authStatus = createOp()
+		case "PUT":
+			authStatus = readOp()
+		case "DELETE":
+			authStatus = deleteOp()
+		}
+
+		if !authStatus {
+			return echo.NewHTTPError(401, "Unauthorized")
 		}
 		return next(c)
 	}
