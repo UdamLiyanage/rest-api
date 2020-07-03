@@ -82,86 +82,134 @@ func getPemCert(token *jwt.Token) (string, error) {
 	return cert, nil
 }
 
-func authorizeRequest(c echo.Context, userUrn string) bool {
-	if (c.Param("id") == "" && c.Request().Method != "POST") || len(strings.Split(c.Path(), "/")) > 5 {
-		//Index method or User specific show
-		return true
-	}
-	c.Set("userUrn", userUrn)
-	requestUrl := func() string {
-		basePath := os.Getenv("AUTHORIZATION_SERVER_API") + c.Path()
-		log.Info(basePath + "?userUrn=" + userUrn + "&resourceUrn=" + c.Param("id"))
-		return basePath + "?userUrn=" + userUrn + "&schemaUrn=" + c.Param("id")
-	}
-	createOp := func() bool {
-		var responseBody map[string]string
-		println("Create Op")
-		body, err := json.Marshal(c.Request().Body)
-		if err != nil {
-			panic(err)
-		}
-		resp, err := http.Post(requestUrl(), "application/json", bytes.NewBuffer(body))
-		if err != nil {
-			log.Error(err)
-			return false
-		}
-		defer func() {
-			_ = resp.Body.Close()
-		}()
-		log.Info(resp.StatusCode)
-		err = json.NewDecoder(resp.Body).Decode(&responseBody)
-		if err != nil {
-			log.Error(err)
-			return false
-		}
-		c.Set("resourceUrn", responseBody["urn"])
-		if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
-			return true
-		}
-		return false
-	}
-	readOp := func() bool {
-		println("Read Op")
-		resp, err := http.Get(requestUrl())
-		if err != nil {
-			log.Error(err)
-		}
-		if resp.StatusCode == http.StatusOK {
-			return true
-		}
-		return false
-	}
-	deleteOp := func() bool {
-		println("Delete Op")
-		client := &http.Client{}
+func authenticateRequest(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var userUrn string
+		jM := jwtmiddleware.New(jwtmiddleware.Options{
+			ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+				aud := os.Getenv("AUTH0_AUDIENCE")
+				checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
+				if !checkAud {
+					return token, errors.New("invalid audience")
+				}
+				iss := os.Getenv("AUTH0_ISSUER")
+				checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
+				if !checkIss {
+					return token, errors.New("invalid issuer")
+				}
 
-		req, err := http.NewRequest("DELETE", requestUrl(), nil)
+				cert, err := getPemCert(token)
+				if err != nil {
+					return nil, err
+				}
+
+				t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+					res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+					return res, nil
+				})
+				if err != nil {
+					return nil, err
+				}
+				x := t.Claims.(jwt.MapClaims)
+				sub := strings.Split(x["sub"].(string), "|")
+				userUrn = sub[1]
+
+				result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+				return result, nil
+			},
+			SigningMethod: jwt.SigningMethodRS256,
+		})
+		err := jM.CheckJWT(c.Response().Writer, c.Request())
 		if err != nil {
-			log.Error(err)
+			return echo.NewHTTPError(500, "Internal server error!")
+		}
+		c.Set("userUrn", userUrn)
+		return next(c)
+	}
+}
+
+func authorizeRequest(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		authStatus := false
+		requestUrl := func() string {
+			basePath := os.Getenv("AUTHORIZATION_SERVER_API") + c.Path()
+			log.Info(basePath + "?userUrn=" + c.Get("userUrn").(string) + "&resourceUrn=" + c.Param("id"))
+			return basePath + "?userUrn=" + c.Get("userUrn").(string) + "&schemaUrn=" + c.Param("id")
+		}
+		createOp := func() bool {
+			var responseBody map[string]string
+			println("Create Op")
+			body, err := json.Marshal(c.Request().Body)
+			if err != nil {
+				panic(err)
+			}
+			resp, err := http.Post(requestUrl(), "application/json", bytes.NewBuffer(body))
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+			defer func() {
+				_ = resp.Body.Close()
+			}()
+			log.Info(resp.StatusCode)
+			err = json.NewDecoder(resp.Body).Decode(&responseBody)
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+			c.Set("resourceUrn", responseBody["urn"])
+			if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
+				return true
+			}
 			return false
+		}
+		readOp := func() bool {
+			println("Read Op")
+			resp, err := http.Get(requestUrl())
+			if err != nil {
+				log.Error(err)
+			}
+			if resp.StatusCode == http.StatusOK {
+				return true
+			}
+			return false
+		}
+		deleteOp := func() bool {
+			println("Delete Op")
+			client := &http.Client{}
+
+			req, err := http.NewRequest("DELETE", requestUrl(), nil)
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Error(err)
+				return false
+			}
+			if resp.StatusCode == http.StatusOK {
+				return true
+			}
+			return false
+		}
+		switch c.Request().Method {
+		case "GET":
+			authStatus = readOp()
+		case "POST":
+			authStatus = createOp()
+		case "PUT":
+			authStatus = readOp()
+		case "DELETE":
+			authStatus = deleteOp()
 		}
 
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Error(err)
-			return false
+		if !authStatus {
+			return echo.NewHTTPError(401, "Unauthorized")
 		}
-		if resp.StatusCode == http.StatusOK {
-			return true
-		}
-		return false
+		return next(c)
 	}
-	switch c.Request().Method {
-	case "GET":
-		return readOp()
-	case "POST":
-		return createOp()
-	case "PUT":
-		return readOp()
-	case "DELETE":
-		return deleteOp()
-	}
-	return false
 }
 
 func setupRouter() *echo.Echo {
@@ -174,95 +222,70 @@ func setupRouter() *echo.Echo {
 
 	e.POST("/auth0/users", createUser)
 
-	authenticatedGroup := e.Group("/api/v1")
+	/*
+		API Groups. Grouped according to the handler method.
+	*/
+	showGroup := e.Group("/api/v1")
+	showGroup.Use(authenticateRequest)
+	showGroup.Use(authorizeRequest)
 
-	authenticatedGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			var userUrn string
-			jM := jwtmiddleware.New(jwtmiddleware.Options{
-				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-					aud := os.Getenv("AUTH0_AUDIENCE")
-					checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
-					if !checkAud {
-						return token, errors.New("invalid audience")
-					}
-					iss := os.Getenv("AUTH0_ISSUER")
-					checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
-					if !checkIss {
-						return token, errors.New("invalid issuer")
-					}
+	indexGroup := e.Group("/api/v1")
+	showGroup.Use(authenticateRequest)
 
-					cert, err := getPemCert(token)
-					if err != nil {
-						return nil, err
-					}
+	saveGroup := e.Group("/api/v1")
+	saveGroup.Use(authenticateRequest)
+	saveGroup.Use(authorizeRequest)
 
-					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
-						res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-						return res, nil
-					})
-					if err != nil {
-						return nil, err
-					}
-					x := t.Claims.(jwt.MapClaims)
-					sub := strings.Split(x["sub"].(string), "|")
-					userUrn = sub[1]
+	updateGroup := e.Group("/api/v1")
+	updateGroup.Use(authenticateRequest)
+	updateGroup.Use(authorizeRequest)
 
-					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-					return result, nil
-				},
-				SigningMethod: jwt.SigningMethodRS256,
-			})
-			err := jM.CheckJWT(c.Response().Writer, c.Request())
-			if err != nil {
-				return echo.NewHTTPError(500, "Internal server error!")
-			}
-			if authorizeRequest(c, userUrn) != true {
-				return echo.NewHTTPError(401, "Unauthorized")
-			}
-			return next(c)
-		}
-	})
+	deleteGroup := e.Group("/api/v1")
+	deleteGroup.Use(authenticateRequest)
+	deleteGroup.Use(authorizeRequest)
 
-	authenticatedGroup.GET("/enterprises", getEnterprises)
-	authenticatedGroup.GET("/enterprises/:id", getEnterprise)
-	authenticatedGroup.GET("/users", getUsers)
-	authenticatedGroup.GET("/users/:id", getUser)
-	authenticatedGroup.GET("/devices", getDevices)
-	authenticatedGroup.GET("/devices/:id", getDevice)
-	authenticatedGroup.GET("/device-schemas", getDeviceSchemas)
-	authenticatedGroup.GET("/device-schemas/:id", getDeviceSchema)
-	authenticatedGroup.GET("/actions", getActions)
-	authenticatedGroup.GET("/actions/:id", getAction)
-	authenticatedGroup.GET("/rules", getRules)
-	authenticatedGroup.GET("/rules/:id", getRule)
+	/*
+		Routes - Prefix /api/v1
+	*/
+	indexGroup.GET("/enterprises", getEnterprises)
+	showGroup.GET("/enterprises/:id", getEnterprise)
+	indexGroup.GET("/users", getUsers)
+	showGroup.GET("/users/:id", getUser)
+	indexGroup.GET("/devices", getDevices)
+	showGroup.GET("/devices/:id", getDevice)
+	indexGroup.GET("/device-schemas", getDeviceSchemas)
+	showGroup.GET("/device-schemas/:id", getDeviceSchema)
+	indexGroup.GET("/actions", getActions)
+	showGroup.GET("/actions/:id", getAction)
+	indexGroup.GET("/rules", getRules)
+	showGroup.GET("/rules/:id", getRule)
 
-	authenticatedGroup.GET("/users/devices", getUserDevices)
-	authenticatedGroup.GET("/users/device-schemas", getUserDeviceSchemas)
-	authenticatedGroup.GET("/devices/:id/rules", getDeviceRules)
-	authenticatedGroup.GET("/device-schemas/:id/actions", getDeviceSchemaActions)
-	authenticatedGroup.GET("/actions/:id/rules", getActionRules)
+	showGroup.GET("/users/devices", getUserDevices)
+	showGroup.GET("/users/device-schemas", getUserDeviceSchemas)
+	showGroup.GET("/devices/:id/rules", getDeviceRules)
+	showGroup.GET("/device-schemas/:id/actions", getDeviceSchemaActions)
+	showGroup.GET("/actions/:id/rules", getActionRules)
 
-	authenticatedGroup.POST("/enterprises", createEnterprise)
-	authenticatedGroup.POST("/users", createUser)
-	authenticatedGroup.POST("/devices", createDevice)
-	authenticatedGroup.POST("/device-schemas", createDeviceSchema)
-	authenticatedGroup.POST("/actions", createAction)
-	authenticatedGroup.POST("/rules", createRule)
+	saveGroup.POST("/enterprises", createEnterprise)
+	saveGroup.POST("/users", createUser)
+	saveGroup.POST("/devices", createDevice)
+	saveGroup.POST("/device-schemas", createDeviceSchema)
+	saveGroup.POST("/actions", createAction)
+	saveGroup.POST("/rules", createRule)
 
-	authenticatedGroup.PUT("/enterprises/:id", updateEnterprise)
-	authenticatedGroup.PUT("/users/:id", updateUser)
-	authenticatedGroup.PUT("/devices/:id", updateDevice)
-	authenticatedGroup.PUT("/device-schemas/:id", updateDeviceSchema)
-	authenticatedGroup.PUT("/actions/:id", updateAction)
-	authenticatedGroup.PUT("/rules/:id", updateRule)
+	updateGroup.PUT("/enterprises/:id", updateEnterprise)
+	updateGroup.PUT("/users/:id", updateUser)
+	updateGroup.PUT("/devices/:id", updateDevice)
+	updateGroup.PUT("/device-schemas/:id", updateDeviceSchema)
+	updateGroup.PUT("/actions/:id", updateAction)
+	updateGroup.PUT("/rules/:id", updateRule)
 
-	authenticatedGroup.DELETE("/enterprises/:id", deleteEnterprise)
-	authenticatedGroup.DELETE("/users/:id", deleteUser)
-	authenticatedGroup.DELETE("/devices/:id", deleteDevice)
-	authenticatedGroup.DELETE("/device-schemas/:id", deleteDeviceSchema)
-	authenticatedGroup.DELETE("/actions/:id", deleteAction)
-	authenticatedGroup.DELETE("/rules/:id", deleteRule)
+	deleteGroup.DELETE("/enterprises/:id", deleteEnterprise)
+	deleteGroup.DELETE("/users/:id", deleteUser)
+	deleteGroup.DELETE("/devices/:id", deleteDevice)
+	deleteGroup.DELETE("/device-schemas/:id", deleteDeviceSchema)
+	deleteGroup.DELETE("/actions/:id", deleteAction)
+	deleteGroup.DELETE("/rules/:id", deleteRule)
 
 	return e
 }
