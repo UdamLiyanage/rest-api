@@ -164,6 +164,51 @@ func authorizeRequest(c echo.Context, userUrn string) bool {
 	return false
 }
 
+func authenticateRequest(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var userUrn string
+		jM := jwtmiddleware.New(jwtmiddleware.Options{
+			ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+				aud := os.Getenv("AUTH0_AUDIENCE")
+				checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
+				if !checkAud {
+					return token, errors.New("invalid audience")
+				}
+				iss := os.Getenv("AUTH0_ISSUER")
+				checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
+				if !checkIss {
+					return token, errors.New("invalid issuer")
+				}
+
+				cert, err := getPemCert(token)
+				if err != nil {
+					return nil, err
+				}
+
+				t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+					res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+					return res, nil
+				})
+				if err != nil {
+					return nil, err
+				}
+				x := t.Claims.(jwt.MapClaims)
+				sub := strings.Split(x["sub"].(string), "|")
+				userUrn = sub[1]
+
+				result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+				return result, nil
+			},
+			SigningMethod: jwt.SigningMethodRS256,
+		})
+		err := jM.CheckJWT(c.Response().Writer, c.Request())
+		if err != nil {
+			return echo.NewHTTPError(500, "Internal server error!")
+		}
+		return next(c)
+	}
+}
+
 func setupRouter() *echo.Echo {
 	e := echo.New()
 
@@ -176,53 +221,7 @@ func setupRouter() *echo.Echo {
 
 	authenticatedGroup := e.Group("/api/v1")
 
-	authenticatedGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			var userUrn string
-			jM := jwtmiddleware.New(jwtmiddleware.Options{
-				ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-					aud := os.Getenv("AUTH0_AUDIENCE")
-					checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
-					if !checkAud {
-						return token, errors.New("invalid audience")
-					}
-					iss := os.Getenv("AUTH0_ISSUER")
-					checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
-					if !checkIss {
-						return token, errors.New("invalid issuer")
-					}
-
-					cert, err := getPemCert(token)
-					if err != nil {
-						return nil, err
-					}
-
-					t, err := jwt.ParseWithClaims(token.Raw, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
-						res, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-						return res, nil
-					})
-					if err != nil {
-						return nil, err
-					}
-					x := t.Claims.(jwt.MapClaims)
-					sub := strings.Split(x["sub"].(string), "|")
-					userUrn = sub[1]
-
-					result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-					return result, nil
-				},
-				SigningMethod: jwt.SigningMethodRS256,
-			})
-			err := jM.CheckJWT(c.Response().Writer, c.Request())
-			if err != nil {
-				return echo.NewHTTPError(500, "Internal server error!")
-			}
-			if authorizeRequest(c, userUrn) != true {
-				return echo.NewHTTPError(401, "Unauthorized")
-			}
-			return next(c)
-		}
-	})
+	authenticatedGroup.Use(authenticateRequest)
 
 	authenticatedGroup.GET("/enterprises", getEnterprises)
 	authenticatedGroup.GET("/enterprises/:id", getEnterprise)
