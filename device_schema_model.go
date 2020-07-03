@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 func UnmarshalDeviceSchema(data []byte) (DeviceSchema, error) {
 	var r DeviceSchema
@@ -14,6 +17,7 @@ func (r *DeviceSchema) Marshal() ([]byte, error) {
 
 type DeviceSchema struct {
 	ID                    string        `json:"_id"`
+	Urn                   string        `json:"urn"`
 	Version               string        `json:"version"`
 	Name                  string        `json:"name"`
 	Type                  string        `json:"type"`
@@ -24,6 +28,8 @@ type DeviceSchema struct {
 	LatestFirmwareVersion string        `json:"latest_firmware_version"`
 	Commands              []Command     `json:"commands"`
 	Parameters            []Parameter   `json:"parameters"`
+	CreatedAt             time.Time     `json:"created_at"`
+	UpdatedAt             time.Time     `json:"updated_at"`
 }
 
 type Command struct {
