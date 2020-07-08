@@ -51,16 +51,20 @@ func getAction(c echo.Context) error {
 }
 
 func getActionRules(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: ruleCollection,
-	}
+	var (
+		crud Operations = Configuration{
+			Collection: ruleCollection,
+		}
+		rules []Rule
+	)
 	response, err := crud.Read(bson.M{
 		"actions": bson.A{c.Param("id")},
 	})
 	if err != nil {
 		return c.JSON(500, err)
 	}
-	return c.JSON(200, response)
+	err = response.All(context.Background(), &rules)
+	return c.JSON(200, rules)
 }
 
 func createAction(c echo.Context) error {

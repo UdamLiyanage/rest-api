@@ -51,16 +51,20 @@ func getDeviceSchema(c echo.Context) error {
 }
 
 func getDeviceSchemaActions(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: actionCollection,
-	}
+	var (
+		crud Operations = Configuration{
+			Collection: actionCollection,
+		}
+		actions []Action
+	)
 	response, err := crud.Read(bson.M{
 		"schema": c.Param("id"),
 	})
 	if err != nil {
 		return c.JSON(500, err)
 	}
-	return c.JSON(200, response)
+	err = response.All(context.Background(), &actions)
+	return c.JSON(200, actions)
 }
 
 func createDeviceSchema(c echo.Context) error {

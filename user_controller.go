@@ -55,6 +55,7 @@ func getUserDevices(c echo.Context) error {
 		crud Operations = Configuration{
 			Collection: deviceCollection,
 		}
+		devices []Device
 	)
 	response, err := crud.Read(bson.M{
 		"user": c.Get("userUrn").(string),
@@ -62,20 +63,31 @@ func getUserDevices(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, err)
 	}
-	return c.JSON(200, response)
+	err = response.All(context.Background(), &devices)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, devices)
 }
 
 func getUserDeviceSchemas(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: deviceSchemaCollection,
-	}
+	var (
+		crud Operations = Configuration{
+			Collection: deviceSchemaCollection,
+		}
+		schemas []DeviceSchema
+	)
 	response, err := crud.Read(bson.M{
 		"user": c.Get("userUrn").(string),
 	})
 	if err != nil {
 		return c.JSON(500, err)
 	}
-	return c.JSON(200, response)
+	err = response.All(context.Background(), &schemas)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, schemas)
 }
 
 func createUser(c echo.Context) error {
