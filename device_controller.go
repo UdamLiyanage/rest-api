@@ -83,7 +83,7 @@ func createDevice(c echo.Context) error {
 		panic(err)
 	}
 	//device.Urn = c.Get("resourceUrn").(string)
-	//device.User = c.Get("userUrn").(string)
+	device.User = c.Get("userUrn").(string)
 	device.Urn = uuid.New().String()
 	device.CreatedAt = time.Now()
 	device.UpdatedAt = time.Now()
