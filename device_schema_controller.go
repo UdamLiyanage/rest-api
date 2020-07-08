@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -11,14 +12,21 @@ import (
 )
 
 func getDeviceSchemas(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: deviceSchemaCollection,
-	}
+	var (
+		crud Operations = Configuration{
+			Collection: deviceSchemaCollection,
+		}
+		schemas []DeviceSchema
+	)
 	response, err := crud.Read(nil)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	err = response.All(context.Background(), &schemas)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, schemas)
 }
 
 func getDeviceSchema(c echo.Context) error {

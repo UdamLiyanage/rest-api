@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -11,14 +12,21 @@ import (
 )
 
 func getActions(c echo.Context) error {
-	var crud Operations = Configuration{
-		Collection: actionCollection,
-	}
+	var (
+		crud Operations = Configuration{
+			Collection: actionCollection,
+		}
+		actions []Action
+	)
 	response, err := crud.Read(nil)
 	if err != nil {
 		panic(err)
 	}
-	return c.JSON(200, response)
+	err = response.All(context.Background(), &actions)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, actions)
 }
 
 func getAction(c echo.Context) error {
