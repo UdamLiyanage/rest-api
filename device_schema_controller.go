@@ -80,7 +80,7 @@ func createDeviceSchema(c echo.Context) error {
 		panic(err)
 	}
 	//schema.Urn = c.Get("resourceUrn").(string)
-	//schema.User = c.Get("userUrn").(string)
+	schema.User = c.Get("userUrn").(string)
 	schema.Urn = uuid.New().String()
 	schema.CreatedAt = time.Now()
 	schema.UpdatedAt = time.Now()

@@ -18,6 +18,7 @@ func (r *DeviceSchema) Marshal() ([]byte, error) {
 type DeviceSchema struct {
 	ID                    string        `json:"_id"`
 	Urn                   string        `json:"urn"`
+	User                  string        `json:"user"`
 	Version               string        `json:"version"`
 	Name                  string        `json:"name"`
 	Type                  string        `json:"type"`
