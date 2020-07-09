@@ -23,6 +23,7 @@ type Device struct {
 	Enterprise      string `json:"enterprise" bson:"enterprise"`
 	Name            string `json:"name" bson:"name"`
 	FirmwareVersion string `json:"firmware_version" bson:"firmware_version"`
+	Status          bool   `json:"status" bson:"status"`
 	//LastFirmwareUpdate time.Time `json:"last_firmware_update,omitempty" bson:"last_firmware_update,omitempty"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`

@@ -85,6 +85,7 @@ func createDevice(c echo.Context) error {
 	//device.Urn = c.Get("resourceUrn").(string)
 	device.User = c.Get("userUrn").(string)
 	device.Urn = uuid.New().String()
+	device.Status = false
 	device.CreatedAt = time.Now()
 	device.UpdatedAt = time.Now()
 	_, err = crud.Create(device)
